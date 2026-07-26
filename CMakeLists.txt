@@ -504,6 +504,9 @@ if(PLATFORM_SWITCH)
     target_include_directories(${PROJECT_NAME} PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/lib/switch/include
     )
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR ENABLE_LTO)
+        set_property(TARGET ${PROJECT_NAME} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif()
 endif ()
 
 set(MOONLIGHT_APP_SDL_LIBS)

@@ -49,6 +49,8 @@ set_property(CACHE APPLE_MOBILE_SIMULATOR_ARCH PROPERTY STRINGS arm64 x64)
 # Nintendo Switch Only
 cmake_dependent_option(USE_DEKO3D "Using deko3d instead of OpenGL." OFF "PLATFORM_SWITCH" OFF)
 
+option(ENABLE_LTO "Enable Link-Time Optimization (LTO)" OFF)
+
 option(USE_BOOST_FILESYSTEM "Whether to use the boost::filesystem instead of std::filesystem" OFF)
 
 # Do not use it until you know what you are doing.

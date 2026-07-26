@@ -10,6 +10,10 @@
 extern void getWindowSize(int* w, int* h);
 #endif
 
+#ifdef __SWITCH__
+#include <switch.h>
+#endif
+
 using namespace brls;
 
 int m_video_format;
@@ -86,10 +90,25 @@ void MoonlightSession::connection_started() {
 
     m_active_session->m_stop_requested = false;
     m_active_session->m_is_active = true;
+
+#ifdef __SWITCH__
+    // Lock screen sleep mode during active streaming session
+    appletSetMediaPlaybackState(true);
+    if (appletGetOperationMode() == AppletOperationMode_Handheld) {
+        // Prevent high CPU boost thermal throttling in Handheld mode during streaming
+        appletSetCpuBoostMode(AppletCpuBoostMode_Disabled);
+    }
+#endif
 }
 
 void MoonlightSession::connection_terminated(int error_code) {
     brls::Logger::info("MoonlightSession: Connection terminated with code: {}", error_code);
+
+#ifdef __SWITCH__
+    // Re-enable screen sleep state and reset CPU boost mode on session termination
+    appletSetMediaPlaybackState(false);
+    appletSetCpuBoostMode(AppletCpuBoostMode_Disabled);
+#endif
 
     if (!m_active_session)
         return;
