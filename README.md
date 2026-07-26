@@ -301,3 +301,73 @@ Thanks a lot to [Rock88](https://github.com/rock88) and his [Moonlight-NX](https
 Also huge thanks to [Cooler3D](https://github.com/Cooler3Ds) for help with Deko3D implementation and solving performance issues
 
 The Switch deko3d upscaling path includes AMD FidelityFX Super Resolution 1.0 EASU and RCAS code translated from the MIT-licensed [GPUOpen FidelityFX-FSR](https://github.com/GPUOpen-Effects/FidelityFX-FSR) reference implementation. Copyright (c) Advanced Micro Devices, Inc. All rights reserved.
+
+---
+
+## 🚀 Low-Latency Optimization Roadmap & Sprint Changelog (LookADev)
+
+This repository contains the complete 5-stage optimization suite (Sprint 0 through Sprint 4) developed to minimize decoding delay, reduce input latency, synchronize audio/video pacing, prioritize network traffic, and manage thermal power limits on Nintendo Switch hardware.
+
+### 📌 Sprint 0: Base Hardware Acceleration & Memory Optimizations
+- **Objective**: Maximize raw video decoding throughput and improve binary layout efficiency.
+- **Architectural Changes**:
+  - Added hardware NVDEC video decoder toggle in user settings.
+  - Configured CMake interprocedural optimization (LTO) for Switch Release builds.
+  - Tuned Audren audio renderer buffer size for low-latency playback.
+  - Implemented adaptive resolution scaling support.
+
+### ⚡ Sprint 1: Input Latency Optimization & Thread Prioritization (`INPUT-01`)
+- **Objective**: Minimize input-to-photon delay and eliminate polling stutter on Horizon OS.
+- **Architectural Changes**:
+  - Decoupled input polling into an autonomous ~250 Hz thread loop (`MoonlightInputManager`).
+  - Elevated `InputSend` network thread priority on Horizon OS (`svcSetThreadPriority` to `0x20`).
+  - Isolated UI event loops from video worker cores to prevent scheduling contention.
+
+### 🎞️ Sprint 2: Direct NVDEC Submission & deko3d Double Buffering (`GFX-01`)
+- **Objective**: Eliminate queue copy overhead in NVDEC hardware decoding and minimize GPU rendering pipeline latency.
+- **Architectural Changes**:
+  - Enabled direct video decode unit submission (`CAPABILITY_DIRECT_SUBMIT`) on NVDEC.
+  - Configured `deko3d` double buffering (`FRAMEBUFFERS_COUNT = 2`) to minimize display latency.
+  - Reduced input-to-render frame pipeline latency by ~16.6 ms (1 full frame period at 60 FPS).
+
+### 🎵 Sprint 3: Audio/Video Frame Pacing & Playout Synchronization (`SYNC-01`)
+- **Objective**: Eliminate frame drops and audio crackling under transient Wi-Fi packet jitter.
+- **Architectural Changes**:
+  - Implemented `AVFrameQueue` adaptive playout windowing and dynamic target depth adjustment.
+  - Added Audren audio sample pacing stabilization to maintain synchronization with host clock.
+
+### 📡 Sprint 4: Advanced Network QoS, Performance HUD & Production Release (`NET-01`, `UI-01`, `SYS-01`, `REL-01`)
+- **Objective**: Prioritize real-time UDP packets across network routers, display diagnostic HUD metrics, manage system power/thermals, and package production builds.
+- **Architectural Changes**:
+  - **QoS Socket Tuning (`NET-01`)**: Configured `IP_TOS` / `IPV6_TCLASS` on UDP streaming sockets with `DSCP_EF` (`0xB8` Expedited Forwarding) for video/audio and `IPTOS_LOWDELAY` (`0x10`) for input controls. Dynamically scale `SO_RCVBUF` to prevent buffer overflow.
+  - **Real-Time Performance HUD (`UI-01`)**: Enhanced the streaming debug overlay to display NVDEC Decode Latency (ms), Network Receive Latency & Drop Count, deko3d Render Frametime / GPU time (ms), and `AVFrameQueue` depth & drop rates.
+  - **Horizon OS Power & Thermals (`SYS-01`)**: Prevented screen dimming/sleep via `appletSetMediaPlaybackState(true)` during active streaming. Disabled CPU boost in Handheld mode (`AppletCpuBoostMode_Disabled`) to avoid thermal throttling.
+  - **Production Build Packaging (`REL-01`)**: Updated CMake and GitHub Actions (`.github/workflows/docker-image.yml`) with `-DCMAKE_BUILD_TYPE=Release -DENABLE_LTO=ON`.
+
+---
+
+## 🛠️ Building `Moonlight-Switch.nro`
+
+### 1. Automated GitHub Actions Build (Recommended)
+Every push or tag on branch `master` automatically triggers the GitHub Actions workflow (`.github/workflows/all-builds.yml` -> `docker-image.yml`).
+The workflow compiles the optimized binary using `devkitpro/devkita64:latest` with LTO enabled and uploads `Moonlight-Switch.nro` directly to Artifacts / Releases.
+
+### 2. Building via Docker / devkitPro (Local)
+```bash
+# Clone repository recursively
+git clone --recursive https://github.com/vetlucasmartins/moonlightswitchoptimize-lookadev.git
+cd moonlightswitchoptimize-lookadev
+
+# Run CMake build with devkitPro environment
+cmake -B build/switch \
+  -DCMAKE_TOOLCHAIN_FILE=$DEVKITPRO/cmake/Switch.cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DENABLE_LTO=ON \
+  -DPLATFORM_SWITCH=ON \
+  -DUSE_DEKO3D=ON
+
+# Compile NRO executable
+make -C build/switch Moonlight.nro -j$(nproc)
+```
+The output file `build/switch/Moonlight-Switch.nro` will be ready to copy to `sdcard:/switch/Moonlight-Switch/`.
+
