@@ -1115,8 +1115,6 @@ void DKVideoRenderer::draw(NVGcontext* vg, int width, int height, AVFrame* frame
             const auto postProcessStart = PostProcessClock::now();
             const auto upscalingStageStart = PostProcessClock::now();
             queue.submitCommands(cmdlist);
-            vctx->queueSignalFence(&upscalingFence);
-            vctx->queueWaitFence(&upscalingFence);
 
             if (m_upscaling_enabled) {
                 m_video_render_stats_progress.total_upscaling_time +=

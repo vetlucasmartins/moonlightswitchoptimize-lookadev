@@ -144,15 +144,23 @@ void MoonlightSession::connection_terminated(int error_code) {
     m_active_session->m_is_terminated = true;
 }
 
-void MoonlightSession::connection_log_message(const char* format, ...) {
-    va_list arglist;
-    va_start(arglist, format);
-    int size = vsnprintf(NULL, 0, format, arglist);
-    char buffer[size];
-    vsnprintf(buffer, size, format, arglist);
-    va_end(arglist);
+#include <vector>
+#include <cstdarg>
 
-    brls::Logger::info(fmt::runtime(std::string(buffer)));
+void MoonlightSession::connection_log_message(const char* format, ...) {
+    va_list args1, args2;
+    va_start(args1, format);
+    va_copy(args2, args1);
+
+    int size = vsnprintf(nullptr, 0, format, args1);
+    va_end(args1);
+
+    if (size > 0) {
+        std::vector<char> buffer(size + 1);
+        vsnprintf(buffer.data(), buffer.size(), format, args2);
+        brls::Logger::info(fmt::runtime(std::string(buffer.data())));
+    }
+    va_end(args2);
 }
 
 void MoonlightSession::connection_rumble(unsigned short controller,

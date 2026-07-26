@@ -251,19 +251,23 @@ void AudrenAudioRenderer::write_audio(const void* buf, size_t size) {
     size_t queued_samples = m_total_queued_samples -
         audrvVoiceGetPlayedSampleCount(&m_driver, 0);
 
-    // If we have over 0.5 desync, drop samples
-    if (queued_samples > m_sample_rate / 2)
+    // Se houver mais de 0.5s de desincronização acumulada, reiniciar ponteiros
+    if (queued_samples > m_sample_rate / 2) {
+        m_total_queued_samples = 0;
         return;
+    }
 
     size_t written = 0;
-    while (written < size) {
-        written += append_audio(static_cast<const char*>(buf) + written, size - written);
+    int retry = 0;
+    while (written < size && retry < 3) {
+        size_t chunk = append_audio(static_cast<const char*>(buf) + written, size - written);
+        written += chunk;
 
-        if (written != size) {
+        if (chunk == 0) {
             mutexLock(&m_update_lock);
             audrvUpdate(&m_driver);
             mutexUnlock(&m_update_lock);
-            audrenWaitFrame();
+            retry++;
         }
     }
 }

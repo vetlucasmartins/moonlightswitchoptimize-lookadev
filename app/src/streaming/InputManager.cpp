@@ -27,13 +27,7 @@ float applyStickScrollDeadzone(float axis, float configuredDeadzone) {
 }
 }
 
-float fsqrt_(float f) {
-    int i = *(int *)&f;
-    i = (i >> 1) + 0x1fbb67ae;
-    float f1 = *(float *)&i;
-    return 0.5F * (f1 + f / f1);
 
-}
 
 MoonlightInputManager::MoonlightInputManager() {
     auto inputManager = brls::Application::getPlatform()->getInputManager();
@@ -321,7 +315,7 @@ GamepadState MoonlightInputManager::getControllerState(int controllerNum,
     float rightYAxis = controller.axes[brls::RIGHT_Y];
 
     if (leftStickDeadzone > 0) {
-        float magnitude = fsqrt_(leftXAxis * leftXAxis + leftYAxis * leftYAxis);
+        float magnitude = std::sqrt(leftXAxis * leftXAxis + leftYAxis * leftYAxis);
         if (magnitude < leftStickDeadzone) {
             leftXAxis = 0;
             leftYAxis = 0;
@@ -329,7 +323,7 @@ GamepadState MoonlightInputManager::getControllerState(int controllerNum,
     }
 
     if (rightStickDeadzone > 0) {
-        float magnitude = fsqrt_(rightXAxis * rightXAxis + rightYAxis * rightYAxis);
+        float magnitude = std::sqrt(rightXAxis * rightXAxis + rightYAxis * rightYAxis);
         if (magnitude < rightStickDeadzone) {
             rightXAxis = 0;
             rightYAxis = 0;
