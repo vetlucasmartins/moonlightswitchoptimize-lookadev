@@ -37,9 +37,6 @@
                 "${vcpkgRoot}/arm64-osx/include"
             ],
             "defines": [
-                "__SWITCH__",
-                "PLATFORM_SWITCH",
-                "BOREALIS_USE_DEKO3D",
                 "USE_MBEDTLS_CRYPTO",
                 "SUPPORT_UPSCALING"
             ],
