@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <atomic>
+#include <thread>
+#include <nanovg.h>
 #include "gestures/fingers_gesture_recognizer.hpp"
 #include "keyboard_view.hpp"
 #include "loading_overlay.hpp"
@@ -16,9 +19,6 @@
 #include "GameStreamClient.hpp"
 #include "MoonlightSession.hpp"
 #include "two_finger_scroll_recognizer.hpp"
-
-#include <atomic>
-#include <thread>
 
 class StreamingView : public brls::Box {
   public:
@@ -55,7 +55,7 @@ class StreamingView : public brls::Box {
     bool m_use_hdr = false;
     TwoFingerScrollGestureRecognizer* scrollTouchRecognizer = nullptr;
 
-    std::atomic<bool> inputThreadRunning{false};
+    std::atomic<bool> inputThreadRunning = false;
     std::thread inputThread;
 
     void startInputThread();
