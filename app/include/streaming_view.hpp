@@ -9,7 +9,6 @@
 
 #include <atomic>
 #include <thread>
-#include <nanovg.h>
 #include "gestures/fingers_gesture_recognizer.hpp"
 #include "keyboard_view.hpp"
 #include "loading_overlay.hpp"
@@ -19,6 +18,8 @@
 #include "GameStreamClient.hpp"
 #include "MoonlightSession.hpp"
 #include "two_finger_scroll_recognizer.hpp"
+
+struct NVGcontext;
 
 class StreamingView : public brls::Box {
   public:
