@@ -1,4 +1,4 @@
-#ifdef __SWITCH__
+#if defined(__SWITCH__) && __has_include(<switch.h>)
 
 #include "IAudioRenderer.hpp"
 #include <opus/opus_multistream.h>
