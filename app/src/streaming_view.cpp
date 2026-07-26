@@ -238,6 +238,35 @@ StreamingView::StreamingView(const Host& host, const AppInfo& app) : host(host),
             });
 }
 
+void StreamingView::startInputThread() {
+    if (inputThreadRunning) return;
+    inputThreadRunning = true;
+    inputThread = std::thread([this]() {
+#ifdef __SWITCH__
+        svcSetThreadPriority(CUR_THREAD_HANDLE, 0x20);
+        u64 coreMask = 0;
+        s32 coreCount = 0;
+        if (R_SUCCEEDED(svcGetThreadCoreMask(&coreCount, &coreMask, CUR_THREAD_HANDLE)) && coreCount >= 3) {
+            svcSetThreadCoreMask(CUR_THREAD_HANDLE, 1, 1ULL << 1);
+        }
+#endif
+        while (inputThreadRunning) {
+            if (focused && !tempInputLock && session && session->is_active()) {
+                handleInput();
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(4));
+        }
+    });
+}
+
+void StreamingView::stopInputThread() {
+    if (!inputThreadRunning) return;
+    inputThreadRunning = false;
+    if (inputThread.joinable()) {
+        inputThread.join();
+    }
+}
+
 void StreamingView::onFocusGained() {
     Box::onFocusGained();
 
@@ -261,10 +290,14 @@ void StreamingView::onFocusGained() {
     setBottomBarStatus("1");
 
     scrollTouchRecognizer->forceReset();
+
+    startInputThread();
 }
 
 void StreamingView::onFocusLost() {
     Box::onFocusLost();
+
+    stopInputThread();
 
     MoonlightInputManager::instance().setInputEnabled(false);
     MoonlightInputManager::instance().dropInput();
@@ -293,8 +326,6 @@ void StreamingView::draw(NVGcontext* vg, float x, float y, float width,
 
     session->draw(vg, (int) width, (int) height);
 
-    if (!tempInputLock && session->is_active())
-        handleInput();
     handleOverlayCombo();
     handleMouseInputCombo();
 
@@ -415,6 +446,8 @@ void StreamingView::terminate(bool terminateApp) {
     if (terminated)
         return;
     terminated = true;
+
+    stopInputThread();
 
     session->stop(terminateApp);
 
@@ -575,6 +608,8 @@ void StreamingView::onLayout() {
 }
 
 StreamingView::~StreamingView() {
+    stopInputThread();
+
 #ifdef PLATFORM_TVOS
     updatePreferredDisplayMode(false);
 #endif

@@ -267,6 +267,9 @@ void AudrenAudioRenderer::write_audio(const void* buf, size_t size) {
             mutexLock(&m_update_lock);
             audrvUpdate(&m_driver);
             mutexUnlock(&m_update_lock);
+#ifdef __SWITCH__
+            svcSleepThread(1000000); // 1ms sleep between retries to allow audren driver to drain buffers
+#endif
             retry++;
         }
     }

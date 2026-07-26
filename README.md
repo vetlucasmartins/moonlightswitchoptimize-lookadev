@@ -132,8 +132,8 @@ If you'd like to test your translation, you could follow build instructions, or 
 cd 'folder/to/store/the/sources'
 
 # Clone this repo with submodules
-git clone https://github.com/XITRIX/Moonlight-Switch.git --recursive
-cd Moonlight-Switch
+git clone https://github.com/vetlucasmartins/moonlightswitchoptimize-lookadev.git --recursive
+cd moonlightswitchoptimize-lookadev
 ```
 
 ### Switch

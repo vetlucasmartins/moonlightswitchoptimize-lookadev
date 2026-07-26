@@ -850,11 +850,7 @@ int FFmpegVideoDecoder::submit_decode_unit(PDECODE_UNIT decode_unit) {
 }
 
 int FFmpegVideoDecoder::capabilities() const {
-#if defined(__SWITCH__)
-    return CAPABILITY_SLICES_PER_FRAME(4);
-#else
     return CAPABILITY_SLICES_PER_FRAME(4) | CAPABILITY_DIRECT_SUBMIT;
-#endif
 }
 
 int FFmpegVideoDecoder::decode(char* indata, int inlen) {
