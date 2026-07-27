@@ -1,9 +1,9 @@
-#include "Singleton.hpp"
-#include <map>
-#include <cstdio>
-#include <string>
-#include <vector>
 #pragma once
+
+#include <map>
+#include <string>
+
+#include "utils/Singleton.hpp"
 
 struct NVGcontext;
 struct Data;

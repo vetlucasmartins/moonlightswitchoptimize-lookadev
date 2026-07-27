@@ -9,6 +9,9 @@
 #include <borealis/platforms/switch/switch_input.hpp>
 #endif
 
+#include <string>
+#include <vector>
+
 #include "settings_tab.hpp"
 #include "Settings.hpp"
 #include "helper.hpp"

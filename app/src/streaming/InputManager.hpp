@@ -7,10 +7,11 @@
 
 #pragma once
 
-#include "Singleton.hpp"
+#include "utils/Singleton.hpp"
 #include "keyboard_view.hpp"
 #include <borealis.hpp>
 #include <chrono>
+#include <map>
 #include <optional>
 
 // Moonlight ready gamepad

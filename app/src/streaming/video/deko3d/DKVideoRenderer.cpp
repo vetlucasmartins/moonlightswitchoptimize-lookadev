@@ -7,6 +7,8 @@
 #include <borealis/platforms/switch/switch_platform.hpp>
 
 #include <libavcodec/avcodec.h>
+#include <libavutil/avutil.h>
+#include <libavutil/pixfmt.h>
 #include <libavutil/hwcontext_nvtegra.h>
 #include <libavutil/imgutils.h>
 

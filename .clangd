@@ -1,6 +1,8 @@
 CompileFlags:
+  Remove:
+    - "-I.*extern/borealis/library/include/borealis$"
+    - "-Iextern/borealis/library/include/borealis"
   Add:
-    - "-std=c++20"
     - "-D__SWITCH__"
     - "-DPLATFORM_SWITCH"
     - "-DUSE_MBEDTLS_CRYPTO"
@@ -23,7 +25,6 @@ CompileFlags:
     - "-Iapp/src/streaming/video/Metal"
     - "-Iapp/src/utils"
     - "-Iextern/borealis/library/include"
-    - "-Iextern/borealis/library/include/borealis"
     - "-Iextern/borealis/library/include/borealis/extern/nanovg"
     - "-Iextern/borealis/library/lib/core"
     - "-Iextern/borealis/library/lib/views"
@@ -34,9 +35,18 @@ CompileFlags:
     - "-Iextern/moonlight-common-c/src"
     - "-Iextern/CImg"
 
+---
+If:
+  PathMatch: .*\.(cpp|hpp|cc|cxx)
+CompileFlags:
+  Add:
+    - "-std=c++20"
+
+---
 Diagnostics:
   Suppress:
     - "pp_file_not_found"
     - "unknown_typename"
     - "undeclared_var_use"
     - "fatal_too_many_errors"
+

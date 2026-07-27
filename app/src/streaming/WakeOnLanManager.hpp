@@ -1,5 +1,5 @@
 #include "GameStreamClient.hpp"
-#include "Singleton.hpp"
+#include "utils/Singleton.hpp"
 #include <stdio.h>
 
 struct Host;

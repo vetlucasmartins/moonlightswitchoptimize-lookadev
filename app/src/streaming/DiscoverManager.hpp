@@ -9,7 +9,7 @@
 
 #include "GameStreamClient.hpp"
 #include "Settings.hpp"
-#include "Singleton.hpp"
+#include "utils/Singleton.hpp"
 #include <borealis.hpp>
 #include <pthread.h>
 #include <stdio.h>

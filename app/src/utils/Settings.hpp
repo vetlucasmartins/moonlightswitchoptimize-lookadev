@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Singleton.hpp"
+#include "utils/Singleton.hpp"
 #include <borealis.hpp>
 #include <map>
 #include <cstdio>

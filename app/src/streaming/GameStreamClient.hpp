@@ -1,15 +1,15 @@
-#include "Data.hpp"
-#include "Singleton.hpp"
-#include "Settings.hpp"
-#include "client.h"
-#include "errors.h"
+#pragma once
+
 #include <functional>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
-#pragma once
+#include "Data.hpp"
+#include "Settings.hpp"
+#include "client.h"
+#include "utils/Singleton.hpp"
 
 template <typename T> struct GSResult {
   public:
