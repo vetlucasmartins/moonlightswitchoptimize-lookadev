@@ -152,6 +152,10 @@ if (PLATFORM_PSV)
     set(MULTICAST_DISABLED ON)
 endif ()
 
+if (PLATFORM_SWITCH)
+    add_compile_definitions(FRAMEBUFFERS_COUNT=2)
+endif ()
+
 if (USE_LIBROMFS)
     add_libromfs(${PROJECT_NAME} ${PROJECT_RESOURCES})
 endif ()
