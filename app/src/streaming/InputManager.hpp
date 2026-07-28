@@ -7,15 +7,17 @@
 
 #pragma once
 
-#include "utils/Singleton.hpp"
-#include "keyboard_view.hpp"
-#include <borealis.hpp>
 #include <atomic>
 #include <chrono>
 #include <map>
 #include <mutex>
 #include <optional>
 #include <thread>
+#include <vector>
+
+#include "utils/Singleton.hpp"
+#include "keyboard_view.hpp"
+#include <borealis.hpp>
 
 // Moonlight ready gamepad
 struct GamepadState {

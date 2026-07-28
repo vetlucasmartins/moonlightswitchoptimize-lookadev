@@ -1,6 +1,14 @@
 
-#ifdef __SWITCH__
-#include <switch.h>
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <limits>
+
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
 #endif
 
 #include "InputManager.hpp"
@@ -8,10 +16,10 @@
 #include "Settings.hpp"
 #include <borealis.hpp>
 #include <streaming_view.hpp>
-#include <algorithm>
-#include <chrono>
-#include <cmath>
-#include <limits>
+
+#if defined(__SWITCH__) && __has_include(<switch.h>)
+#include <switch.h>
+#endif
 
 using namespace brls;
 

@@ -1,15 +1,16 @@
 #pragma once
 
+#include <cstdio>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "utils/Singleton.hpp"
 #include <borealis.hpp>
 #if defined(__SWITCH__) && __has_include(<switch.h>)
 #include <switch.h>
 #endif
-#include <map>
-#include <cstdio>
-#include <string>
-#include <utility>
-#include <vector>
 
 enum VideoCodec : int { H264, H265, AV1 };
 std::string getVideoCodecName(VideoCodec codec);
