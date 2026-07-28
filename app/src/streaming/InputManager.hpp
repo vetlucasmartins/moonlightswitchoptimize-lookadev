@@ -13,10 +13,8 @@
 #include <mutex>
 #include <optional>
 #include <thread>
-#include <vector>
 
 #include "Singleton.hpp"
-#include "keyboard_view.hpp"
 #include <borealis.hpp>
 
 // Moonlight ready gamepad
