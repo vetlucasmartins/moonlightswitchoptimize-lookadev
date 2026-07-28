@@ -318,6 +318,10 @@ void Settings::load() {
                 m_use_hw_decoding = json_typeof(hw_decoding) == JSON_TRUE;
             }
 
+            if (json_t* adaptive_res = json_object_get(settings, "adaptive_resolution")) {
+                m_adaptive_resolution = json_typeof(adaptive_res) == JSON_TRUE;
+            }
+
             if (json_t* sops = json_object_get(settings, "sops")) {
                 m_sops = json_typeof(sops) == JSON_TRUE;
             }
@@ -531,6 +535,7 @@ void Settings::save() {
         }
         
         if (json_t* settings = json_object()) {
+            json_object_set_new(settings, "adaptive_resolution", m_adaptive_resolution ? json_true() : json_false());
             json_object_set_new(settings, "resolution", json_integer(m_resolution));
             json_object_set_new(settings, "native_resolution_scale", json_integer(m_native_resolution_scale));
             json_object_set_new(settings, "fps", json_integer(m_fps));

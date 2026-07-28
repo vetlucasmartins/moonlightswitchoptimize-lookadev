@@ -2,6 +2,9 @@
 
 #include "utils/Singleton.hpp"
 #include <borealis.hpp>
+#if defined(__SWITCH__) && __has_include(<switch.h>)
+#include <switch.h>
+#endif
 #include <map>
 #include <cstdio>
 #include <string>
@@ -105,7 +108,18 @@ class Settings : public Singleton<Settings> {
     bool is_favorite(const Host& host, int app_id);
     bool has_any_favorite();
 
-    [[nodiscard]] int resolution() const { return m_resolution; }
+    [[nodiscard]] bool adaptive_resolution() const { return m_adaptive_resolution; }
+    void set_adaptive_resolution(bool adaptive) { m_adaptive_resolution = adaptive; }
+
+    [[nodiscard]] int resolution() const {
+#if defined(__SWITCH__) && __has_include(<switch.h>)
+        if (m_adaptive_resolution) {
+            AppletOperationMode mode = appletGetOperationMode();
+            return (mode == AppletOperationMode_Docked) ? 1080 : 720;
+        }
+#endif
+        return m_resolution;
+    }
     void set_resolution(int resolution) { m_resolution = resolution; }
 
     [[nodiscard]] int native_resolution_scale() const {
@@ -134,7 +148,17 @@ class Settings : public Singleton<Settings> {
     [[nodiscard]] AudioBackend audio_backend() const { return m_audio_backend; }
     void set_audio_backend(AudioBackend audio_backend) { m_audio_backend = audio_backend; }
 
-    [[nodiscard]] int bitrate() const { return m_bitrate; }
+    [[nodiscard]] int bitrate() const {
+#if defined(__SWITCH__) && __has_include(<switch.h>)
+        if (m_adaptive_resolution) {
+            AppletOperationMode mode = appletGetOperationMode();
+            if (mode == AppletOperationMode_Docked && m_bitrate < 20000) {
+                return 20000;
+            }
+        }
+#endif
+        return m_bitrate;
+    }
     void set_bitrate(int bitrate) { m_bitrate = bitrate; }
 
     [[nodiscard]] bool request_hdr() const { 
@@ -333,6 +357,7 @@ class Settings : public Singleton<Settings> {
     std::string m_gamepad_mapping_path;
 
     std::vector<Host> m_hosts;
+    bool m_adaptive_resolution = true;
     int m_resolution = 720;
     int m_native_resolution_scale = 100;
     int m_fps = 60;

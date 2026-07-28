@@ -4,3 +4,6 @@ libromfs-generator
 build*
 vcpkg_installed
 .psv-logs/
+.cache/
+.clangd
+

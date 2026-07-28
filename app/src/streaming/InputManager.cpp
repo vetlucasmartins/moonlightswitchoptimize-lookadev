@@ -438,6 +438,7 @@ void MoonlightInputManager::handleControllers(bool specialKey) {
 }
 
 void MoonlightInputManager::handleInput(bool ignoreTouch) {
+    std::lock_guard<std::mutex> lock(inputMutex);
     inputDropped = false;
     static brls::ControllerState rawController;
     static brls::ControllerState controller;
@@ -735,3 +736,31 @@ short MoonlightInputManager::glfwKeyToVKKey(BrlsKeyboardScancode key) {
         return key;
     }
 }
+
+void MoonlightInputManager::startInputThread() {
+    if (inputThreadRunning.load()) return;
+    inputThreadRunning.store(true);
+    brls::Logger::info("InputManager: Starting high-frequency decoupled input sampling thread (~250 Hz)");
+    inputThread = std::thread([this]() {
+#if defined(__SWITCH__) && __has_include(<switch.h>)
+        // Elevate input thread priority on Switch
+        svcSetThreadPriority(CUR_THREAD_HANDLE, 0x2B);
+#endif
+        while (inputThreadRunning.load()) {
+            if (inputEnabled) {
+                handleInput();
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(4));
+        }
+    });
+}
+
+void MoonlightInputManager::stopInputThread() {
+    if (!inputThreadRunning.load()) return;
+    brls::Logger::info("InputManager: Stopping decoupled input sampling thread");
+    inputThreadRunning.store(false);
+    if (inputThread.joinable()) {
+        inputThread.join();
+    }
+}
+

@@ -5,7 +5,7 @@
 #include <switch.h>
 #pragma once
 
-#define BUFFER_COUNT 5
+#define BUFFER_COUNT 2
 
 class AudrenAudioRenderer : public IAudioRenderer {
   public:
@@ -44,7 +44,7 @@ class AudrenAudioRenderer : public IAudioRenderer {
     ssize_t m_current_size = 0;
 
     const int m_samples_per_frame = AUDREN_SAMPLES_PER_FRAME_48KHZ;
-    const int m_latency = 5;
+    const int m_latency = 2;
 };
 
 #endif // __SWITCH__

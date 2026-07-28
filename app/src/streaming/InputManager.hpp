@@ -10,9 +10,12 @@
 #include "utils/Singleton.hpp"
 #include "keyboard_view.hpp"
 #include <borealis.hpp>
+#include <atomic>
 #include <chrono>
 #include <map>
+#include <mutex>
 #include <optional>
+#include <thread>
 
 // Moonlight ready gamepad
 struct GamepadState {
@@ -62,7 +65,14 @@ class MoonlightInputManager : public Singleton<MoonlightInputManager> {
     static void leftMouseClick();
     static void rightMouseClick();
 
+    void startInputThread();
+    void stopInputThread();
+
   private:
+    std::thread inputThread;
+    std::atomic<bool> inputThreadRunning{false};
+    std::mutex inputMutex;
+
     enum class DesktopScrollAxis {
         None,
         Horizontal,
