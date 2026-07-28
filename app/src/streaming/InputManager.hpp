@@ -15,7 +15,7 @@
 #include <thread>
 #include <vector>
 
-#include "utils/Singleton.hpp"
+#include "Singleton.hpp"
 #include "keyboard_view.hpp"
 #include <borealis.hpp>
 

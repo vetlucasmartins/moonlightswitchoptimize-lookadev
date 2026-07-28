@@ -6,7 +6,7 @@
 #include <utility>
 #include <vector>
 
-#include "utils/Singleton.hpp"
+#include "Singleton.hpp"
 #include <borealis.hpp>
 #if defined(__SWITCH__) && __has_include(<switch.h>)
 #include <switch.h>
