@@ -11,10 +11,10 @@
 #undef max
 #endif
 
+#include <borealis.hpp>
+#include "Settings.hpp"
 #include "InputManager.hpp"
 #include "Limelight.h"
-#include "Settings.hpp"
-#include <borealis.hpp>
 #include <streaming_view.hpp>
 
 #if defined(__SWITCH__) && __has_include(<switch.h>)

@@ -162,15 +162,15 @@ void Settings::load() {
                     if (json_typeof(json) == JSON_OBJECT) {
                         Host host;
                         
-                        if (json_t* address = json_object_get(json, "address")) {
-                            if (json_typeof(address) == JSON_STRING) {
-                                host.address = json_string_value(address);
+                        if (json_t* j_address = json_object_get(json, "address")) {
+                            if (json_typeof(j_address) == JSON_STRING) {
+                                host.address = json_string_value(j_address);
                             }
                         }
 
-                        if (json_t* remoteAddress = json_object_get(json, "remote_address")) {
-                            if (json_typeof(remoteAddress) == JSON_STRING) {
-                                host.remoteAddress = json_string_value(remoteAddress);
+                        if (json_t* j_remote_address = json_object_get(json, "remote_address")) {
+                            if (json_typeof(j_remote_address) == JSON_STRING) {
+                                host.remoteAddress = json_string_value(j_remote_address);
                             }
                         } else if (json_t* legacyRemoteAddress = json_object_get(json, "remoteAddress")) {
                             if (json_typeof(legacyRemoteAddress) == JSON_STRING) {
