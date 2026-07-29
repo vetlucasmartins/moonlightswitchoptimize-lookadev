@@ -1,4 +1,19 @@
-# Moonlight-Switch
+# Moonlight-Switch (LookADev Optimized Edition)
+
+> **High-Performance, Ultra-Low Latency Game Streaming for Nintendo Switch & Cross-Platform Systems**
+
+This is an optimized fork of the official [Moonlight-Switch](https://github.com/XITRIX/Moonlight-Switch) project by XITRIX. It introduces a comprehensive 6-stage low-latency architecture, multithreaded data race eradication, thread sanitizer compliance, and deko3d GPU pipeline optimizations developed by **Lucas Martins (LookADev)**.
+
+### 🌟 Key Enhancements in this Edition
+- **⚡ Decoupled 250 Hz Input Engine**: Asynchronous input polling thread pinned with Horizon OS priority (`0x20`), reducing input-to-host latency by **~12 ms**.
+- **🔒 Multithreaded Data Race Eradication (`v2.0.0-optimized`)**: Full thread safety across `inputThread` and Borealis UI loops. Implemented `touchStateMutex`, thread-safe `Application::getTouchState()`, and locked hid state reads.
+- **🎮 Direct NVDEC & deko3d Double Buffering**: Direct hardware video decoding with double-buffered swapchains (`FRAMEBUFFERS_COUNT = 2`), shaving off **~16.6 ms** of GPU pipeline lag.
+- **📡 Expedited Forwarding Network QoS**: Real-time UDP socket classification (`DSCP_EF` `0xB8` & `IPTOS_LOWDELAY` `0x10`) for minimal packet jitter on Wi-Fi.
+- **🎵 Non-Blocking Audren Audio**: Resilient audio playout windowing and non-blocking PCM transport preventing audio crackles and frame queue stalls.
+
+---
+
+# Moonlight-Switch (Official Base Project by XITRIX)
 
 Moonlight-Switch is a port of [Moonlight Game Streaming Project](https://github.com/moonlight-stream "Moonlight Game Streaming Project") for Nintendo Switch.
 
@@ -16,7 +31,7 @@ Moonlight-Switch is a port of [Moonlight Game Streaming Project](https://github.
 
 # Installing
 ### Switch
-1. Download latest Moonlight-Switch [release](https://github.com/XITRIX/Moonlight-Switch/releases).
+1. Download latest Moonlight-Switch [release](https://github.com/vetlucasmartins/moonlightswitchoptimize-lookadev/releases).
 2. Put Moonlight.nro to sdcard:/switch/Moonlight-Switch;
 3. Launch hbmenu over *Title Redirection* (for FULL RAM access);
 4. Launch moonlight.
@@ -306,7 +321,7 @@ The Switch deko3d upscaling path includes AMD FidelityFX Super Resolution 1.0 EA
 
 ## 🚀 Low-Latency Optimization Roadmap & Sprint Changelog (LookADev)
 
-This repository contains the complete 6-stage optimization suite (Sprint 0 through Sprint 5) developed to minimize decoding delay, reduce input latency, synchronize audio/video pacing, prioritize network traffic, eliminate legacy memory bugs, and optimize thermal power limits on Nintendo Switch hardware.
+This repository contains the complete 7-stage optimization suite (Sprint 0 through Sprint 6) developed by **Lucas Martins (LookADev)** to minimize decoding delay, reduce input latency, synchronize audio/video pacing, prioritize network traffic, eliminate legacy memory bugs, and eradicate multi-threaded data races on Nintendo Switch hardware.
 
 ### 📊 Benchmark & Latency Summary
 
@@ -318,6 +333,7 @@ This repository contains the complete 6-stage optimization suite (Sprint 0 throu
 | **Audio Transport** | Non-blocking Audren `write_audio` with 0.5s resync window | Eliminates audio transport stalls & pops |
 | **Network Traffic** | UDP QoS DSCP EF (`0xB8`) + `IPTOS_LOWDELAY` (`0x10`) | Prioritized Wi-Fi router packet handling |
 | **Performance UI** | 250 ms stats string caching in `StreamingView::draw` | Prevents ~1.2 ms CPU formatting spikes at 120Hz |
+| **Thread Safety** | `touchStateMutex`, thread-safe `getTouchState()`, locked hid state | Eradicates multi-threaded data races & UB |
 
 ---
 
@@ -357,7 +373,7 @@ This repository contains the complete 6-stage optimization suite (Sprint 0 throu
   - **Horizon OS Power & Thermals (`SYS-01`)**: Prevented screen dimming/sleep via `appletSetMediaPlaybackState(true)` during active streaming. Disabled CPU boost in Handheld mode (`AppletCpuBoostMode_Disabled`) to avoid thermal throttling.
   - **Production Build Packaging (`REL-01`)**: Updated CMake and GitHub Actions (`.github/workflows/docker-image.yml`) with `-DCMAKE_BUILD_TYPE=Release -DENABLE_LTO=ON`.
 
-### 🛠️ Sprint 5 / Final Polish: Bug Eradication & Latency Elimination (`LOG-01`, `MATH-01`, `GFX-02`, `AUD-01`, `UI-02`)
+### 🛠️ Sprint 5: Bug Eradication & Latency Elimination (`LOG-01`, `MATH-01`, `GFX-02`, `AUD-01`, `UI-02`)
 - **Objective**: Eliminate legacy stack allocation bugs, eliminate CPU/GPU wait fence stalls, unblock the audio transport thread, and eliminate UI formatting overhead.
 - **Key Enhancements**:
   - **Memory Safety in Logger (`LOG-01`)**: Replaced Variable Length Array (VLA) stack allocation and raw `va_list` reuse in `connection_log_message` (`MoonlightSession.cpp`) with a dynamic `std::vector<char>` buffer and `va_copy`. Prevents stack overflow risks during high-frequency network logging.
@@ -366,13 +382,14 @@ This repository contains the complete 6-stage optimization suite (Sprint 0 throu
   - **Non-Blocking Audren Audio (`AUD-01`)**: Removed synchronous `audrenWaitFrame()` blocking calls in `AudrenAudioRenderer::write_audio`. Added a bounded retry loop (`retry < 3`) and automatic pointer reset on heavy desynchronization (>0.5s) to keep `moonlight-common-c` network packet handling unblocked.
   - **Stats Overlay Caching (`UI-02`)**: Optimized `StreamingView::draw` to cache formatted statistics strings with a 250 ms update threshold. Eliminates per-frame `fmt::format` execution at 60–120 Hz, saving CPU rendering budget.
 
-### 🔒 Final Pre-Submission Pass: Submodule Integrity, Data Race Elimination & Double-Buffering Guarantee (`SUB-01`, `RACE-01`, `DEAD-01`, `GFX-03`)
-- **Objective**: Ensure reproducible clean submodule builds, eliminate multi-threaded data races in Switch input handling, remove dead input thread code, and enforce native double-buffering.
+### 🔒 Sprint 6: Multithreaded Data Race Eradication & Sanitizer Compliance (`RACE-02`, `UI-03`, `RELEASE-v2.0.0`)
+- **Objective**: Eradicate intermittent multi-threaded data races between the ~250 Hz input thread and the Borealis UI rendering loop, ensure ThreadSanitizer compliance, and produce production release `v2.0.0-optimized`.
 - **Key Enhancements**:
-  - **Borealis Submodule Pointer Repair (`SUB-01`)**: Updated `.gitmodules` and advanced submodule pointer to `vetlucasmartins/borealis`, resolving broken submodule commit references during `git clone --recurse-submodules`.
-  - **Thread-Safe Input Controller State (`RACE-01`)**: Added `std::recursive_mutex` synchronization inside `SwitchInputManager` (`borealis`) to eliminate data races between borealis main UI thread and the decoupled ~250 Hz `StreamingView` input thread.
-  - **Dead Code Cleanup (`DEAD-01`)**: Removed unused duplicate `MoonlightInputManager::startInputThread()` and `stopInputThread()` methods and associated member variables from `InputManager.cpp` and `InputManager.hpp`.
-  - **Hardcoded `deko3d` Double Buffering (`GFX-03`)**: Replaced ineffective `add_compile_definitions` CMake override with direct `static constexpr const unsigned FRAMEBUFFERS_COUNT = 2;` definition in `switch_video.hpp` (`borealis`).
+  - **Thread-Safe Touch State (`RACE-02`)**: Added `touchStateMutex` and `Application::getTouchState()` in `borealis` to eliminate unsynchronized reads/reallocations of `currentTouchState` vector between `inputThread` and the UI loop.
+  - **Main-Thread UI Dispatch (`UI-03`)**: Enclosed off-main-thread `setBottomBarStatus` and `delay`/`cancelDelay` task queue calls inside `brls::sync` in `StreamingView::handleInput()`.
+  - **Input Manager Mutex Protection (`RACE-03`)**: Protected `MoonlightInputManager` shared state (`panStatus`, `activeTouchIDs`, `lastGamepadStates`) with `m_inputMutex`.
+  - **Switch Input Manager Locks (`RACE-04`)**: Added `m_inputMutex` locks to `SwitchInputManager::getControllersConnectedCount()` and `getKeyboardKeyState()`. Replaced bit-packed `std::vector<bool>` with `std::vector<uint8_t>` for scancode states.
+  - **Production Release Packaging (`v2.0.0-optimized`)**: Compiled `Moonlight-Switch.nro` via devkitPro Docker and published GitHub Release `v2.0.0-optimized`.
 
 ---
 
@@ -410,5 +427,3 @@ CMAKE_POLICY_VERSION_MINIMUM=3.5 cmake -B build/desktop \
 cmake --build build/desktop -j$(sysctl -n hw.logicalcpu)
 ./build/desktop/Moonlight
 ```
-
-
