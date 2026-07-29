@@ -203,6 +203,7 @@ void MoonlightInputManager::reloadButtonMappingLayout() {
 
 void MoonlightInputManager::updateTouchScreenPanDelta(
     brls::PanGestureStatus panStatus) {
+    std::lock_guard<std::mutex> lock(m_inputMutex);
     this->panStatus = panStatus;
 }
 
@@ -251,6 +252,7 @@ void MoonlightInputManager::handleRumbleTriggers(uint16_t controllerNumber,
 }
 
 void MoonlightInputManager::dropInput() {
+    std::lock_guard<std::mutex> lock(m_inputMutex);
     if (inputDropped)
         return;
 
@@ -446,6 +448,7 @@ void MoonlightInputManager::handleControllers(bool specialKey) {
 }
 
 void MoonlightInputManager::handleInput(bool ignoreTouch) {
+    std::lock_guard<std::mutex> lock(m_inputMutex);
     inputDropped = false;
     static brls::ControllerState rawController;
     static brls::ControllerState controller;
@@ -554,7 +557,7 @@ void MoonlightInputManager::handleInput(bool ignoreTouch) {
     } else {
         uint8_t eventType;
 
-        auto touches = brls::Application::currentTouchState;
+        auto touches = brls::Application::getTouchState();
         for (int i = 0; i < touches.size(); i++) {
             auto touch = touches[i];
             if (touch.view && touch.view->hasParent() && dynamic_cast<StreamingView*>(touch.view->getParent()) == nullptr) return;

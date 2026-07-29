@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <map>
+#include <mutex>
 #include <optional>
 
 #include "Singleton.hpp"
@@ -69,6 +70,7 @@ class MoonlightInputManager : public ::Singleton<MoonlightInputManager> {
         Vertical,
     };
 
+    mutable std::mutex m_inputMutex;
     RumbleValues rumbleCache[GAMEPADS_MAX];
     GamepadState lastGamepadStates[GAMEPADS_MAX];
     brls::ControllerButton mappingButtons[brls::_BUTTON_MAX];

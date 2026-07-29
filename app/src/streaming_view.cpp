@@ -491,17 +491,19 @@ void StreamingView::handleInput() {
     MoonlightInputManager::instance().handleInput(keyboard != nullptr);
 //    }
 
-    if (!Application::currentTouchState.empty()) {
-        setBottomBarStatus("2");
+    if (!Application::getTouchState().empty()) {
+        brls::sync([this]() {
+            setBottomBarStatus("2");
 
-        if (bottombarDelayTask != -1)
-            cancelDelay(bottombarDelayTask);
+            if (bottombarDelayTask != -1)
+                cancelDelay(bottombarDelayTask);
 
-        ASYNC_RETAIN
-        bottombarDelayTask = delay(3000, [ASYNC_TOKEN]() {
-            ASYNC_RELEASE
-            setBottomBarStatus("1");
-            bottombarDelayTask = -1;
+            ASYNC_RETAIN
+            bottombarDelayTask = delay(3000, [ASYNC_TOKEN]() {
+                ASYNC_RELEASE
+                setBottomBarStatus("1");
+                bottombarDelayTask = -1;
+            });
         });
     }
 }
