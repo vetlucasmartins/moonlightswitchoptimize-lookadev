@@ -382,23 +382,33 @@ This repository contains the complete 6-stage optimization suite (Sprint 0 throu
 Every push or tag on branch `master` automatically triggers the GitHub Actions workflow (`.github/workflows/all-builds.yml` -> `docker-image.yml`).
 The workflow compiles the optimized binary using `devkitpro/devkita64:latest` with LTO enabled and uploads `Moonlight-Switch.nro` directly to Artifacts / Releases.
 
-### 2. Building via Docker / devkitPro (Local)
+### ⚡ Docker One-Liner Build (Local)
 ```bash
-# Clone repository recursively
-git clone --recursive https://github.com/vetlucasmartins/moonlightswitchoptimize-lookadev.git
-cd moonlightswitchoptimize-lookadev
+cd Moonlight-Switch
 
-# Run CMake build with devkitPro environment
-cmake -B build/switch \
-  -DCMAKE_TOOLCHAIN_FILE=$DEVKITPRO/cmake/Switch.cmake \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DENABLE_LTO=ON \
-  -DPLATFORM_SWITCH=ON \
-  -DUSE_DEKO3D=ON
-
-# Compile NRO executable
-make -C build/switch Moonlight.nro -j$(nproc)
+docker run --rm -v $(pwd):/workspace -w /workspace devkitpro/devkita64:latest bash -c "
+  cmake -B build/switch \
+    -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/cmake/Switch.cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_LTO=ON \
+    -DPLATFORM_SWITCH=ON \
+    -DUSE_DEKO3D=ON && \
+  make -C build/switch Moonlight.nro -j\$(nproc)
+"
 ```
-The output file `build/switch/Moonlight-Switch.nro` will be ready to copy to `sdcard:/switch/Moonlight-Switch/`.
+The output file `build/switch/Moonlight.nro` will be compiled and ready.
+
+### 💻 macOS / Host Desktop Build Note
+When building the desktop target on macOS with recent CMake versions (3.30+), pass `CMAKE_POLICY_VERSION_MINIMUM=3.5`:
+```bash
+CMAKE_POLICY_VERSION_MINIMUM=3.5 cmake -B build/desktop \
+  -DPLATFORM_DESKTOP=ON \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DCMAKE_CXX_FLAGS="-fsanitize=thread -g" \
+  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=thread"
+
+cmake --build build/desktop -j$(sysctl -n hw.logicalcpu)
+./build/desktop/Moonlight
+```
 
 

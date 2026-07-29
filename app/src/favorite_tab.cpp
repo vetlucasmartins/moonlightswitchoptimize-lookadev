@@ -7,8 +7,10 @@
 
 #include "favorite_tab.hpp"
 #include "app_cell.hpp"
+#include "grid_view.hpp"
 #include "main_tabs_view.hpp"
 #include "forwarder_maker.hpp"
+#include "utils/Settings.hpp"
 #include <cstdlib>
 #include <string>
 

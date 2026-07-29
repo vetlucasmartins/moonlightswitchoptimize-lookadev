@@ -16,9 +16,11 @@
 #include "helper.hpp"
 #include "ingame_overlay_view.hpp"
 #include "streaming_input_overlay.hpp"
+#include "gestures/fingers_gesture_recognizer.hpp"
 #include "two_finger_scroll_recognizer.hpp"
 #include <Limelight.h>
 #include <chrono>
+#include <optional>
 #include <nanovg.h>
 
 #if defined(__SDL3__)
