@@ -366,6 +366,14 @@ This repository contains the complete 6-stage optimization suite (Sprint 0 throu
   - **Non-Blocking Audren Audio (`AUD-01`)**: Removed synchronous `audrenWaitFrame()` blocking calls in `AudrenAudioRenderer::write_audio`. Added a bounded retry loop (`retry < 3`) and automatic pointer reset on heavy desynchronization (>0.5s) to keep `moonlight-common-c` network packet handling unblocked.
   - **Stats Overlay Caching (`UI-02`)**: Optimized `StreamingView::draw` to cache formatted statistics strings with a 250 ms update threshold. Eliminates per-frame `fmt::format` execution at 60–120 Hz, saving CPU rendering budget.
 
+### 🔒 Final Pre-Submission Pass: Submodule Integrity, Data Race Elimination & Double-Buffering Guarantee (`SUB-01`, `RACE-01`, `DEAD-01`, `GFX-03`)
+- **Objective**: Ensure reproducible clean submodule builds, eliminate multi-threaded data races in Switch input handling, remove dead input thread code, and enforce native double-buffering.
+- **Key Enhancements**:
+  - **Borealis Submodule Pointer Repair (`SUB-01`)**: Updated `.gitmodules` and advanced submodule pointer to `vetlucasmartins/borealis`, resolving broken submodule commit references during `git clone --recurse-submodules`.
+  - **Thread-Safe Input Controller State (`RACE-01`)**: Added `std::recursive_mutex` synchronization inside `SwitchInputManager` (`borealis`) to eliminate data races between borealis main UI thread and the decoupled ~250 Hz `StreamingView` input thread.
+  - **Dead Code Cleanup (`DEAD-01`)**: Removed unused duplicate `MoonlightInputManager::startInputThread()` and `stopInputThread()` methods and associated member variables from `InputManager.cpp` and `InputManager.hpp`.
+  - **Hardcoded `deko3d` Double Buffering (`GFX-03`)**: Replaced ineffective `add_compile_definitions` CMake override with direct `static constexpr const unsigned FRAMEBUFFERS_COUNT = 2;` definition in `switch_video.hpp` (`borealis`).
+
 ---
 
 ## 🛠️ Building `Moonlight-Switch.nro`
