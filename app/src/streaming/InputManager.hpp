@@ -49,7 +49,7 @@ struct RumbleValues {
     uint16_t rightTriggerMotor;
 };
 
-class MoonlightInputManager : public Singleton<MoonlightInputManager> {
+class MoonlightInputManager : public ::Singleton<MoonlightInputManager> {
   public:
     MoonlightInputManager();
     void dropInput();

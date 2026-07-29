@@ -81,7 +81,7 @@ inline bool hosts_match(const Host& lhs, const Host& rhs) {
     return false;
 }
 
-class Settings : public Singleton<Settings> {
+class Settings : public ::Singleton<Settings> {
   public:
     [[nodiscard]] std::string working_dir() const { return m_working_dir; }
 
