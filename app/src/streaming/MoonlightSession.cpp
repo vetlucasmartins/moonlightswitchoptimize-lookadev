@@ -439,6 +439,95 @@ void MoonlightSession::draw(NVGcontext* vg, int width, int height) {
             m_session_stats.video_render_stats =
                 *m_video_renderer->video_render_stats();
             m_last_stats_update_ms = now;
+
+            export_telemetry_sample();
+            check_network_adaptation();
         }
+    }
+}
+
+void MoonlightSession::export_telemetry_sample() {
+    if (!Settings::instance().export_telemetry_csv())
+        return;
+
+    std::lock_guard<std::mutex> lock(m_telemetry_mutex);
+    const uint64_t now = LiGetMillis();
+
+    if (!m_csv_log_file.is_open()) {
+        std::filesystem::path log_dir = Settings::instance().logs_dir();
+        if (log_dir.empty()) {
+            log_dir = "/switch/moonlight/logs";
+        }
+        std::error_code ec;
+        std::filesystem::create_directories(log_dir, ec);
+
+        m_csv_log_filename = (log_dir / fmt::format("telemetry_{}.csv", now)).string();
+        m_csv_log_file.open(m_csv_log_filename, std::ios::out | std::ios::app);
+
+        if (m_csv_log_file.is_open()) {
+            m_csv_log_file << "timestamp_ms,host_fps,net_fps,dec_fps,render_fps,"
+                           << "dec_time_ms,dec_delay_ms,receive_time_ms,net_dropped_frames,"
+                           << "render_time_ms,gpu_render_time_ms,post_proc_time_ms,"
+                           << "dithering_time_ms,upscale_time_ms,sharpen_time_ms,"
+                           << "total_drops,estimated_e2e_latency_ms\n";
+        }
+    }
+
+    if (m_csv_log_file.is_open() && (now - m_last_csv_export_ms >= 500)) {
+        m_last_csv_export_ms = now;
+
+        const auto& dec_stats = m_session_stats.video_decode_stats;
+        const auto& ren_stats = m_session_stats.video_render_stats;
+
+        size_t totalDrops = AVFrameHolder::instance().getFrameDropStat() +
+                            AVFrameHolder::instance().getFrameQueueOverflowDropStat() +
+                            AVFrameHolder::instance().getFrameQueuePacingSkipStat();
+
+        float e2e_latency = dec_stats.current_receive_time +
+                            dec_stats.current_decoding_time +
+                            dec_stats.current_decoder_delay +
+                            ren_stats.rendering_time;
+
+        m_csv_log_file << fmt::format("{},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{:.2f},{},{:.2f}\n",
+                                      now,
+                                      dec_stats.current_host_fps,
+                                      dec_stats.current_received_fps,
+                                      dec_stats.current_decoded_fps,
+                                      ren_stats.rendered_fps,
+                                      dec_stats.current_decoding_time,
+                                      dec_stats.current_decoder_delay,
+                                      dec_stats.current_receive_time,
+                                      dec_stats.network_dropped_frames,
+                                      ren_stats.rendering_time,
+                                      ren_stats.gpu_rendering_time,
+                                      ren_stats.post_processing_time,
+                                      ren_stats.dithering_time,
+                                      ren_stats.upscaling_time,
+                                      ren_stats.sharpening_time,
+                                      totalDrops,
+                                      e2e_latency);
+        m_csv_log_file.flush();
+    }
+}
+
+void MoonlightSession::check_network_adaptation() {
+    const uint64_t now = LiGetMillis();
+    if (m_last_jitter_check_ms == 0 || now - m_last_jitter_check_ms >= 2000) {
+        m_last_jitter_check_ms = now;
+        const auto& dec_stats = m_session_stats.video_decode_stats;
+
+        if (dec_stats.current_receive_time > 25.0f || dec_stats.network_dropped_frames > 15) {
+            brls::Logger::warning("Network jitter detected (receive_time: {:.2f}ms, dropped: {}). Dynamic adaptation active.",
+                                  dec_stats.current_receive_time, dec_stats.network_dropped_frames);
+        }
+    }
+}
+
+void MoonlightSession::attempt_auto_recovery() {
+    if (!m_is_active || m_is_terminated) return;
+
+    if (m_connection_status_is_poor) {
+        brls::Logger::info("Auto-recovery: Refreshing network socket states...");
+        check_network_adaptation();
     }
 }

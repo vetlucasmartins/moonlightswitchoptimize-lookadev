@@ -69,6 +69,7 @@ void Settings::set_working_dir(const std::string& working_dir) {
     m_key_dir = make_preferred_path(base_path / "key");
     m_boxart_dir = make_preferred_path(base_path / "boxart");
     m_log_path = make_preferred_path(base_path / "log.log");
+    m_logs_dir = make_preferred_path(base_path / "logs");
     m_gamepad_mapping_path =
             make_preferred_path(base_path / "gamepad_mapping_v1.2.0.json");
 
@@ -76,8 +77,78 @@ void Settings::set_working_dir(const std::string& working_dir) {
     fs::create_directories(base_path, error);
     fs::create_directories(fs::path(m_key_dir), error);
     fs::create_directories(fs::path(m_boxart_dir), error);
+    fs::create_directories(fs::path(m_logs_dir), error);
+#if defined(__SWITCH__)
+    fs::create_directories("/switch/moonlight/logs", error);
+#endif
     
     load();
+}
+
+void Settings::apply_quality_profile(QualityProfile profile) {
+    m_quality_profile = profile;
+    switch (profile) {
+        case QUALITY_COMPETITIVE:
+            set_upscaling_mode(UPSCALING_FSR1);
+            set_rcas(false);
+            set_dithering(false);
+            set_frames_queue_size(1);
+            break;
+        case QUALITY_BALANCED:
+            set_upscaling_mode(UPSCALING_FSR1);
+            set_rcas(true);
+            set_rcas_strength(0.20f);
+            set_dithering(false);
+            set_frames_queue_size(3);
+            break;
+        case QUALITY_CINEMATIC:
+            set_upscaling_mode(UPSCALING_FSR1);
+            set_rcas(true);
+            set_rcas_strength(0.40f);
+            set_dithering(true);
+            set_dithering_strength(3.0f);
+            set_frames_queue_size(4);
+            break;
+    }
+}
+
+void Settings::set_thermal_profile(ThermalProfile profile) {
+    m_thermal_profile = profile;
+#if defined(__SWITCH__) && __has_include(<switch.h>)
+    if (profile == THERMAL_PERFORMANCE) {
+        appletSetCpuBoostMode(CpuBoostMode_Disabled);
+    } else {
+        appletSetCpuBoostMode(CpuBoostMode_Disabled);
+    }
+#endif
+}
+
+void Settings::set_ultra_low_latency_mode(bool enable) {
+    m_ultra_low_latency = enable;
+    if (enable) {
+        m_frames_queue_size = 1;
+        m_sops = false;
+        m_enable_dithering = false;
+        m_enable_rcas = false;
+        m_upscaling_mode = UPSCALING_OFF;
+#ifdef __SWITCH__
+        m_audio_backend = AUDREN;
+#endif
+    }
+}
+
+bool Settings::get_game_profile(const std::string& app_name, GameProfile& profile) const {
+    auto it = m_game_profiles.find(app_name);
+    if (it != m_game_profiles.end()) {
+        profile = it->second;
+        return true;
+    }
+    return false;
+}
+
+void Settings::save_game_profile(const std::string& app_name, const GameProfile& profile) {
+    m_game_profiles[app_name] = profile;
+    save();
 }
 
 void Settings::add_host(const Host& host) {
@@ -459,6 +530,38 @@ void Settings::load() {
                 }
             }
             
+            if (json_t* export_csv = json_object_get(settings, "export_telemetry_csv")) {
+                m_export_telemetry_csv = json_typeof(export_csv) == JSON_TRUE;
+            }
+
+            if (json_t* q_prof = json_object_get(settings, "quality_profile")) {
+                if (json_typeof(q_prof) == JSON_INTEGER) {
+                    m_quality_profile = (QualityProfile)json_integer_value(q_prof);
+                }
+            }
+
+            if (json_t* t_prof = json_object_get(settings, "thermal_profile")) {
+                if (json_typeof(t_prof) == JSON_INTEGER) {
+                    m_thermal_profile = (ThermalProfile)json_integer_value(t_prof);
+                }
+            }
+
+            if (json_t* ull = json_object_get(settings, "ultra_low_latency")) {
+                m_ultra_low_latency = json_typeof(ull) == JSON_TRUE;
+            }
+
+            if (json_t* stick_exp = json_object_get(settings, "stick_filter_exponential")) {
+                m_stick_filter_exponential = json_typeof(stick_exp) == JSON_TRUE;
+            }
+
+            if (json_t* stick_sens = json_object_get(settings, "stick_sensitivity")) {
+                if (json_typeof(stick_sens) == JSON_REAL) {
+                    m_stick_sensitivity = (float)json_real_value(stick_sens);
+                } else if (json_typeof(stick_sens) == JSON_INTEGER) {
+                    m_stick_sensitivity = (float)json_integer_value(stick_sens);
+                }
+            }
+
             if (json_t* buttons = json_object_get(settings, "guide_key_buttons")) {
                 m_guide_key_options.buttons.clear();
                 size_t size = json_array_size(buttons);
@@ -469,6 +572,27 @@ void Settings::load() {
                             button = (brls::ControllerButton)json_integer_value(j_button);
                             m_guide_key_options.buttons.push_back(button);
                         }
+                    }
+                }
+            }
+        }
+
+        if (json_t* game_profs = json_object_get(root, "game_profiles")) {
+            if (json_typeof(game_profs) == JSON_OBJECT) {
+                const char* key;
+                json_t* val;
+                json_object_foreach(game_profs, key, val) {
+                    if (json_typeof(val) == JSON_OBJECT) {
+                        GameProfile gp;
+                        gp.game_name = key;
+                        if (json_t* bitrate = json_object_get(val, "bitrate")) gp.bitrate = (int)json_integer_value(bitrate);
+                        if (json_t* resolution = json_object_get(val, "resolution")) gp.resolution = (int)json_integer_value(resolution);
+                        if (json_t* fps = json_object_get(val, "fps")) gp.fps = (int)json_integer_value(fps);
+                        if (json_t* qp = json_object_get(val, "quality_profile")) gp.quality_profile = (QualityProfile)json_integer_value(qp);
+                        if (json_t* ull = json_object_get(val, "ultra_low_latency")) gp.ultra_low_latency = json_typeof(ull) == JSON_TRUE;
+                        if (json_t* dzl = json_object_get(val, "deadzone_left")) gp.deadzone_left = (float)json_real_value(dzl);
+                        if (json_t* dzr = json_object_get(val, "deadzone_right")) gp.deadzone_right = (float)json_real_value(dzr);
+                        m_game_profiles[key] = gp;
                     }
                 }
             }
@@ -576,6 +700,13 @@ void Settings::save() {
             json_object_set_new(settings, "overlay_system_button", json_integer((int)m_overlay_system_button));
             json_object_set_new(settings, "guide_system_button", json_integer((int)m_guide_system_button));
 
+            json_object_set_new(settings, "export_telemetry_csv", m_export_telemetry_csv ? json_true() : json_false());
+            json_object_set_new(settings, "quality_profile", json_integer((int)m_quality_profile));
+            json_object_set_new(settings, "thermal_profile", json_integer((int)m_thermal_profile));
+            json_object_set_new(settings, "ultra_low_latency", m_ultra_low_latency ? json_true() : json_false());
+            json_object_set_new(settings, "stick_filter_exponential", m_stick_filter_exponential ? json_true() : json_false());
+            json_object_set_new(settings, "stick_sensitivity", json_real((double)m_stick_sensitivity));
+
             if (json_t* overlayButtons = json_array()) {
                 for (auto button: m_overlay_options.buttons) {
                     json_array_append_new(overlayButtons, json_integer(button));
@@ -598,6 +729,22 @@ void Settings::save() {
             }
             
             json_object_set_new(root, "settings", settings);
+        }
+
+        if (json_t* gameProfs = json_object()) {
+            for (const auto& [name, gp] : m_game_profiles) {
+                if (json_t* jgp = json_object()) {
+                    json_object_set_new(jgp, "bitrate", json_integer(gp.bitrate));
+                    json_object_set_new(jgp, "resolution", json_integer(gp.resolution));
+                    json_object_set_new(jgp, "fps", json_integer(gp.fps));
+                    json_object_set_new(jgp, "quality_profile", json_integer((int)gp.quality_profile));
+                    json_object_set_new(jgp, "ultra_low_latency", gp.ultra_low_latency ? json_true() : json_false());
+                    json_object_set_new(jgp, "deadzone_left", json_real((double)gp.deadzone_left));
+                    json_object_set_new(jgp, "deadzone_right", json_real((double)gp.deadzone_right));
+                    json_object_set_new(gameProfs, name.c_str(), jgp);
+                }
+            }
+            json_object_set_new(root, "game_profiles", gameProfs);
         }
 
         if (json_t* hosts = json_array()) {

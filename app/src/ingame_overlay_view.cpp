@@ -9,11 +9,13 @@
 #include <borealis/platforms/switch/switch_input.hpp>
 #endif
 
+#include <string>
 #include "helper.hpp"
 #include "ingame_overlay_view.hpp"
 #include "streaming_input_overlay.hpp"
 #include "button_selecting_dialog.hpp"
 #include "UpscalingSupport.hpp"
+#include "Settings.hpp"
 
 #include <cmath>
 #include <iomanip>
@@ -34,6 +36,7 @@
         break;
 
 using namespace brls;
+using namespace brls::literals;
 
 namespace {
 void updateStrengthControl(BooleanSliderCell* cell,
@@ -255,6 +258,30 @@ OptionsTab::OptionsTab(StreamingView* streamView) : streamView(streamView) {
     debugButton->init(
         "streaming/debug_info"_i18n, streamView->draw_stats,
         [streamView](bool value) { streamView->draw_stats = value; });
+
+    auto exportCsvButton = new BooleanCell();
+    exportCsvButton->init("Export Latency Logs (CSV)", Settings::instance().export_telemetry_csv(),
+                          [](bool value) { Settings::instance().set_export_telemetry_csv(value); });
+    this->addView(exportCsvButton);
+
+    auto saveProfileButton = new DetailCell();
+    saveProfileButton->setText("Save Profile for Current Game");
+    saveProfileButton->setDetailText(streamView->getApp().name);
+    saveProfileButton->registerClickAction([streamView](View* view) {
+        GameProfile gp;
+        gp.game_name = streamView->getApp().name;
+        gp.bitrate = Settings::instance().bitrate();
+        gp.resolution = Settings::instance().resolution();
+        gp.fps = Settings::instance().fps();
+        gp.quality_profile = Settings::instance().quality_profile();
+        gp.ultra_low_latency = Settings::instance().ultra_low_latency_mode();
+        gp.deadzone_left = Settings::instance().get_deadzone_stick_left();
+        gp.deadzone_right = Settings::instance().get_deadzone_stick_right();
+        Settings::instance().save_game_profile(streamView->getApp().name, gp);
+        brls::Application::notify("Profile saved for " + streamView->getApp().name);
+        return true;
+    });
+    this->addView(saveProfileButton);
 
 #ifdef SUPPORT_UPSCALING
     if (!isVideoUpscalingSupported()) {

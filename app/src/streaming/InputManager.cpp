@@ -315,29 +315,49 @@ GamepadState MoonlightInputManager::getControllerState(int controllerNum,
     float lzAxis = controller.axes[LEFT_Z] > 0 ? controller.axes[LEFT_Z] : (controller.buttons[brls::BUTTON_LT] ? 1.f : 0.f);
     float rzAxis = controller.axes[RIGHT_Z] > 0 ? controller.axes[RIGHT_Z] : (controller.buttons[brls::BUTTON_RT] ? 1.f : 0.f);
 
-    // Truncate dead zones
+    // Truncate dead zones & apply exponential response curve
     float leftStickDeadzone = Settings::instance().get_deadzone_stick_left();
     float rightStickDeadzone = Settings::instance().get_deadzone_stick_right();
+    float stickSensitivity = Settings::instance().stick_sensitivity();
+    bool useExponential = Settings::instance().stick_filter_exponential();
 
     float leftXAxis = controller.axes[brls::LEFT_X];
     float leftYAxis = controller.axes[brls::LEFT_Y];
     float rightXAxis = controller.axes[brls::RIGHT_X];
     float rightYAxis = controller.axes[brls::RIGHT_Y];
 
-    if (leftStickDeadzone > 0) {
-        float magnitude = std::sqrt(leftXAxis * leftXAxis + leftYAxis * leftYAxis);
-        if (magnitude < leftStickDeadzone) {
-            leftXAxis = 0;
-            leftYAxis = 0;
+    // Left Stick curve & deadzone
+    float leftMag = std::sqrt(leftXAxis * leftXAxis + leftYAxis * leftYAxis);
+    if (leftMag < leftStickDeadzone) {
+        leftXAxis = 0.0f;
+        leftYAxis = 0.0f;
+    } else if (leftMag > 0.001f && (1.0f - leftStickDeadzone) > 0.001f) {
+        float normalized = (leftMag - leftStickDeadzone) / (1.0f - leftStickDeadzone);
+        normalized = std::clamp(normalized, 0.0f, 1.0f);
+        if (useExponential) {
+            normalized = normalized * normalized;
         }
+        normalized *= stickSensitivity;
+        float factor = normalized / leftMag;
+        leftXAxis *= factor;
+        leftYAxis *= factor;
     }
 
-    if (rightStickDeadzone > 0) {
-        float magnitude = std::sqrt(rightXAxis * rightXAxis + rightYAxis * rightYAxis);
-        if (magnitude < rightStickDeadzone) {
-            rightXAxis = 0;
-            rightYAxis = 0;
+    // Right Stick curve & deadzone
+    float rightMag = std::sqrt(rightXAxis * rightXAxis + rightYAxis * rightYAxis);
+    if (rightMag < rightStickDeadzone) {
+        rightXAxis = 0.0f;
+        rightYAxis = 0.0f;
+    } else if (rightMag > 0.001f && (1.0f - rightStickDeadzone) > 0.001f) {
+        float normalized = (rightMag - rightStickDeadzone) / (1.0f - rightStickDeadzone);
+        normalized = std::clamp(normalized, 0.0f, 1.0f);
+        if (useExponential) {
+            normalized = normalized * normalized;
         }
+        normalized *= stickSensitivity;
+        float factor = normalized / rightMag;
+        rightXAxis *= factor;
+        rightYAxis *= factor;
     }
 
     GamepadState gamepadState{

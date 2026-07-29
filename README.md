@@ -10,6 +10,77 @@ This is an optimized fork of the official [Moonlight-Switch](https://github.com/
 - **🎮 Direct NVDEC & deko3d Double Buffering**: Direct hardware video decoding with double-buffered swapchains (`FRAMEBUFFERS_COUNT = 2`), shaving off **~16.6 ms** of GPU pipeline lag.
 - **📡 Expedited Forwarding Network QoS**: Real-time UDP socket classification (`DSCP_EF` `0xB8` & `IPTOS_LOWDELAY` `0x10`) for minimal packet jitter on Wi-Fi.
 - **🎵 Non-Blocking Audren Audio**: Resilient audio playout windowing and non-blocking PCM transport preventing audio crackles and frame queue stalls.
+- **🚀 Sprint 7: A Solução Definitiva**: Empirical CSV telemetry export, Python analyzer, 3 Quality Profiles (Competitive, Balanced, Cinematic), Sunshine AV1 & dynamic FEC negotiation, Auto-Recovery, stick filtering & deadzones, and Per-Game Profiles.
+
+---
+
+## 🏆 Sprint 7: A Solução Definitiva
+
+Esta sprint consolida o **Moonlight-Switch (LookADev Optimized Edition)** como o padrão absoluto de streaming de baixíssima latência para o Nintendo Switch.
+
+### 🚀 Novas Funcionalidades e Melhorias da Sprint 7
+
+1. **📊 Validação Empírica e Telemetria em CSV:**
+   - Exportação em tempo real de métricas ponta a ponta para o diretório `/switch/moonlight/logs/`.
+   - Gravação periódica de timestamps, Host FPS, Network FPS, Decode FPS, Render FPS, latência de decodificação NVDEC, jitter de rede, tempo de renderização deko3d e estimativa de latência E2E.
+   - Acompanha o script de análise em Python `tools/latency_analyzer.py` para geração de relatórios de média, variância, 1% low e comparação side-by-side de logs.
+
+2. **🎨 Perfis Globais de Qualidade Gráfica:**
+   - **Competitive:** FSR mínimo (apenas EASU), sem dithering, latência absoluta, frame pacing frouxo para resposta imediata.
+   - **Balanced:** FSR padrão com nitidez RCAS moderada (~20%), equilíbrio perfeito entre qualidade de imagem e latência.
+   - **Cinematic:** FSR avançado (EASU + RCAS 40%), dithering ativado (força 3.0), com prioridade para um frame pacing perfeitamente uniforme.
+
+3. **📡 Negociação Estendida com Host Sunshine & FEC Adaptativo:**
+   - Detecção de capacidades do servidor Sunshine com suporte a stubs para codificação **AV1**.
+   - Monitoramento contínuo de jitter e perdas de pacote com ajuste dinâmico do FEC (Forward Error Correction) e bitrate.
+
+4. **🛡️ Auto-Recovery e Robustez no Horizon OS:**
+   - Recuperação automática de conexões sem queda da sessão perante micro-oscilações de Wi-Fi ou ciclos de Sleep/Wake.
+   - Compatibilidade total com sysmodules populares (`sys-clk`, `Tesla`) através de desalocação segura e prevenção de race conditions na memória overlay.
+
+5. **🎮 Engenharia de Input Avançada & Modo Ultra Low Latency:**
+   - Ajustes finos de deadzone, multiplicador de sensibilidade e filtragem de curva exponencial para analógicos.
+   - Isolamento de processamento de eventos Touch/Mouse da thread principal de polling de Gamepad (mantida em 250 Hz e prioridade `0x20`).
+   - Toggle **"Ultra Low Latency"** de 1-Clique na UI para aplicação instantânea das configurações de menor latência.
+
+6. **📁 Perfis de Configuração por Jogo:**
+   - Salvamento e carregamento automático de parâmetros (bitrate, resolução, perfil de qualidade, modo ultra low latency e deadzones) vinculados ao aplicativo específico do host Sunshine.
+
+---
+
+### 🧪 Protocolo Sugerido para Validação Empírica da Latência
+
+Para validar e comparar cientificamente a latência entre diferentes versões e configurações:
+
+1. **Ativação dos Logs de Telemetria:**
+   - No menu de configurações ou no Ingame Overlay, habilite a opção **"Export Latency Logs (CSV)"**.
+2. **Coleta das Amostras de Teste:**
+   - Inicie o jogo de teste (ex: um jogo competitivo como *Doom Eternal* ou *Street Fighter 6*).
+   - Jogue por no mínimo 60 segundos em uma cena de ação constante para coletar pelo menos 120 amostras de telemetria no cartão SD em `/switch/moonlight/logs/`.
+3. **Execução do Script de Análise:**
+   - Copie o arquivo de log gerado no Switch para o seu computador.
+   - Execute o analisador:
+     ```bash
+     python3 tools/latency_analyzer.py /path/to/telemetry_123456789.csv
+     ```
+   - Para comparar side-by-side duas execuções (ex: Perfil Competitive vs Cinematic):
+     ```bash
+     python3 tools/latency_analyzer.py log_competitive.csv log_cinematic.csv --compare
+     ```
+
+---
+
+### 📡 Diretrizes de QoS e Configuração Recomendada (Sunshine & Roteador)
+
+Para extrair a máxima performance e latência mínima do repositório:
+
+1. **Configuração do Host (Sunshine):**
+   - **Video Encoder:** Forçar NVENC (NVIDIA) ou QuickSync/AMF em modo Low Latency / High Performance.
+   - **PFrame / BFrame Count:** Definir B-Frames = 0 (B-frames adicionam latência de buffer).
+   - **Entropy Coding:** CABAC ou CAVLC em modo fast.
+2. **Configuração do Roteador / Wi-Fi:**
+   - **Banda Wi-Fi:** Conecte o Switch exclusivamente em redes Wi-Fi 5 GHz com largura de canal de 80 MHz (Canal limpo de interferências).
+   - **Qualidade de Serviço (QoS):** Ative regras de priorização para os pacotes UDP da porta 47998-48000 marcados com DSCP `0xB8` (Expedited Forwarding).
 
 ---
 

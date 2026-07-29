@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <fstream>
+#include <mutex>
 #include "GameStreamClient.hpp"
 #include "MoonlightSessionDecoderAndRenderProvider.hpp"
 #include <nanovg.h>
@@ -41,6 +44,10 @@ class MoonlightSession {
     SessionStats* session_stats() const {
         return (SessionStats*)&m_session_stats;
     }
+
+    void export_telemetry_sample();
+    void check_network_adaptation();
+    void attempt_auto_recovery();
 
   private:
     static void connection_stage_starting(int);
@@ -89,4 +96,9 @@ class MoonlightSession {
 
     SessionStats m_session_stats = {};
     uint64_t m_last_stats_update_ms = 0;
+    uint64_t m_last_csv_export_ms = 0;
+    uint64_t m_last_jitter_check_ms = 0;
+    std::ofstream m_csv_log_file;
+    std::string m_csv_log_filename;
+    std::mutex m_telemetry_mutex;
 };

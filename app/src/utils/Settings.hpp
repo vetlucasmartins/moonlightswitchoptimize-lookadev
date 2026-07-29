@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "utils/Singleton.hpp"
+#include "Singleton.hpp"
 #include <borealis.hpp>
 #if defined(__SWITCH__) && __has_include(<switch.h>)
 #include <switch.h>
@@ -13,6 +13,20 @@
 
 enum VideoCodec : int { H264, H265, AV1 };
 std::string getVideoCodecName(VideoCodec codec);
+
+enum QualityProfile : int { QUALITY_COMPETITIVE = 0, QUALITY_BALANCED = 1, QUALITY_CINEMATIC = 2 };
+enum ThermalProfile : int { THERMAL_PERFORMANCE = 0, THERMAL_SILENT = 1 };
+
+struct GameProfile {
+    std::string game_name;
+    int bitrate = 10000;
+    int resolution = 720;
+    int fps = 60;
+    QualityProfile quality_profile = QUALITY_BALANCED;
+    bool ultra_low_latency = true;
+    float deadzone_left = 0.0f;
+    float deadzone_right = 0.0f;
+};
 
 enum UpscalingMode : int { UPSCALING_OFF, UPSCALING_METALFX, UPSCALING_FSR1 };
 
@@ -340,6 +354,29 @@ class Settings : public ::Singleton<Settings> {
     void set_deadzone_stick_right(float deadzone) { m_deadzone_stick_right = deadzone; }
     [[nodiscard]] float get_deadzone_stick_right() const { return m_deadzone_stick_right; }
 
+    [[nodiscard]] std::string logs_dir() const { return m_logs_dir; }
+    [[nodiscard]] bool export_telemetry_csv() const { return m_export_telemetry_csv; }
+    void set_export_telemetry_csv(bool export_csv) { m_export_telemetry_csv = export_csv; }
+
+    [[nodiscard]] QualityProfile quality_profile() const { return m_quality_profile; }
+    void set_quality_profile(QualityProfile profile) { m_quality_profile = profile; }
+    void apply_quality_profile(QualityProfile profile);
+
+    [[nodiscard]] ThermalProfile thermal_profile() const { return m_thermal_profile; }
+    void set_thermal_profile(ThermalProfile profile);
+
+    [[nodiscard]] bool ultra_low_latency_mode() const { return m_ultra_low_latency; }
+    void set_ultra_low_latency_mode(bool enable);
+
+    [[nodiscard]] bool stick_filter_exponential() const { return m_stick_filter_exponential; }
+    void set_stick_filter_exponential(bool value) { m_stick_filter_exponential = value; }
+
+    [[nodiscard]] float stick_sensitivity() const { return m_stick_sensitivity; }
+    void set_stick_sensitivity(float value) { m_stick_sensitivity = value; }
+
+    bool get_game_profile(const std::string& app_name, GameProfile& profile) const;
+    void save_game_profile(const std::string& app_name, const GameProfile& profile);
+
     int get_current_mapping_layout();
     void set_current_mapping_layout(int layout) { m_current_mapping_layout = layout; }
 
@@ -354,6 +391,7 @@ class Settings : public ::Singleton<Settings> {
     std::string m_key_dir;
     std::string m_boxart_dir;
     std::string m_log_path;
+    std::string m_logs_dir;
     std::string m_gamepad_mapping_path;
 
     std::vector<Host> m_hosts;
@@ -384,6 +422,13 @@ class Settings : public ::Singleton<Settings> {
     bool m_sops = false;
     bool m_play_audio = false;
     bool m_write_log = false;
+    bool m_export_telemetry_csv = true;
+    QualityProfile m_quality_profile = QUALITY_BALANCED;
+    ThermalProfile m_thermal_profile = THERMAL_PERFORMANCE;
+    bool m_ultra_low_latency = true;
+    bool m_stick_filter_exponential = true;
+    float m_stick_sensitivity = 1.0f;
+    std::map<std::string, GameProfile> m_game_profiles;
     bool m_swap_ui_keys = false;
     bool m_swap_joycon_stick_to_dpad = false;
     bool m_touchscreen_mouse_mode = false;

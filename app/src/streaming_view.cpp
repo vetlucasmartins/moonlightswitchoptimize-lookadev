@@ -10,6 +10,7 @@
 #endif
 
 #include "streaming_view.hpp"
+#include "Settings.hpp"
 #include "AVFrameHolder.hpp"
 #include "InputManager.hpp"
 #include "click_gesture_recognizer.hpp"
@@ -47,22 +48,22 @@ void overrideButtonsIfNeeded(bool value) {
     ((SwitchInputManager*) brls::Application::getPlatform()->getInputManager())->setHomeButtonOverrideMode(ButtonOverrideMode::NONE);
     if (!value) return;
 
-    switch (Settings::instance().get_overlay_system_button()) {
-        case ButtonOverrideType::NONE: break;
-        case ButtonOverrideType::HOME:
+    switch ((int)Settings::instance().get_overlay_system_button()) {
+        case (int)ButtonOverrideType::NONE: break;
+        case (int)ButtonOverrideType::HOME:
             ((SwitchInputManager*) brls::Application::getPlatform()->getInputManager())->setHomeButtonOverrideMode(ButtonOverrideMode::CUSTOM_EVENT);
             break;  
-        case ButtonOverrideType::SCREENSHOT:
+        case (int)ButtonOverrideType::SCREENSHOT:
             ((SwitchInputManager*) brls::Application::getPlatform()->getInputManager())->setScreenshotButtonOverrideMode(ButtonOverrideMode::CUSTOM_EVENT);
             break;
     }
 
-    switch (Settings::instance().get_guide_system_button()) {
-        case ButtonOverrideType::NONE: break;
-        case ButtonOverrideType::HOME:
+    switch ((int)Settings::instance().get_guide_system_button()) {
+        case (int)ButtonOverrideType::NONE: break;
+        case (int)ButtonOverrideType::HOME:
             ((SwitchInputManager*) brls::Application::getPlatform()->getInputManager())->setHomeButtonOverrideMode(ButtonOverrideMode::GUIDE_BUTTON);
             break;  
-        case ButtonOverrideType::SCREENSHOT:
+        case (int)ButtonOverrideType::SCREENSHOT:
             ((SwitchInputManager*) brls::Application::getPlatform()->getInputManager())->setScreenshotButtonOverrideMode(ButtonOverrideMode::GUIDE_BUTTON);
             break;
     }
@@ -70,6 +71,18 @@ void overrideButtonsIfNeeded(bool value) {
 }
 
 StreamingView::StreamingView(const Host& host, const AppInfo& app) : host(host), app(app) {
+    GameProfile profile;
+    if (Settings::instance().get_game_profile(app.name, profile)) {
+        brls::Logger::info("Loading per-game profile for title: {}", app.name);
+        Settings::instance().set_bitrate(profile.bitrate);
+        Settings::instance().set_resolution(profile.resolution);
+        Settings::instance().set_fps(profile.fps);
+        Settings::instance().apply_quality_profile(profile.quality_profile);
+        Settings::instance().set_ultra_low_latency_mode(profile.ultra_low_latency);
+        Settings::instance().set_deadzone_stick_left(profile.deadzone_left);
+        Settings::instance().set_deadzone_stick_right(profile.deadzone_right);
+    }
+
     Application::getPlatform()->disableScreenDimming(true);
 
     setFocusable(true);
