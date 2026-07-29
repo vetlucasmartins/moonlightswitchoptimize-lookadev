@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <Settings.hpp>
+#include "utils/Settings.hpp"
 #include <borealis.hpp>
 #include <cstdint>
 

@@ -8,7 +8,7 @@
 #pragma once
 
 #include "grid_view.hpp"
-#include <Settings.hpp>
+#include "utils/Settings.hpp"
 #include <borealis.hpp>
 
 class FavoriteTab : public brls::Box {

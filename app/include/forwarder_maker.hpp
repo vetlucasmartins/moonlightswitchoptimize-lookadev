@@ -6,6 +6,6 @@
 //
 
 #pragma once
-#include <Settings.hpp>
+#include "utils/Settings.hpp"
 
 int makeForwarder(const Host& host, const App& app, bool add_moonlight_logo = true);

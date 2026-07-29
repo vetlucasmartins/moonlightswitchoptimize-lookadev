@@ -12,7 +12,7 @@
 #include "gestures/fingers_gesture_recognizer.hpp"
 #include "keyboard_view.hpp"
 #include "loading_overlay.hpp"
-#include <Settings.hpp>
+#include "utils/Settings.hpp"
 #include <borealis.hpp>
 #include <optional>
 #include "GameStreamClient.hpp"

@@ -9,7 +9,7 @@
 
 #include <cstdint>
 #include <borealis.hpp>
-#include "Settings.hpp"
+#include "utils/Settings.hpp"
 #include "GameStreamClient.hpp"
 
 class AddHostTab : public brls::Box
