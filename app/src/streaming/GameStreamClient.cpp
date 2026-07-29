@@ -1,4 +1,5 @@
 #include "GameStreamClient.hpp"
+#include "libgamestream/errors.h"
 #include "Settings.hpp"
 #include "WakeOnLanManager.hpp"
 #include <borealis.hpp>

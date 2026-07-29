@@ -115,7 +115,7 @@ class Settings : public ::Singleton<Settings> {
 #if defined(__SWITCH__) && __has_include(<switch.h>)
         if (m_adaptive_resolution) {
             AppletOperationMode mode = appletGetOperationMode();
-            return (mode == AppletOperationMode_Docked) ? 1080 : 720;
+            return (mode == AppletOperationMode_Console) ? 1080 : 720;
         }
 #endif
         return m_resolution;
@@ -152,7 +152,7 @@ class Settings : public ::Singleton<Settings> {
 #if defined(__SWITCH__) && __has_include(<switch.h>)
         if (m_adaptive_resolution) {
             AppletOperationMode mode = appletGetOperationMode();
-            if (mode == AppletOperationMode_Docked && m_bitrate < 20000) {
+            if (mode == AppletOperationMode_Console && m_bitrate < 20000) {
                 return 20000;
             }
         }

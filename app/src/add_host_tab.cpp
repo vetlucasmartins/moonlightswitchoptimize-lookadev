@@ -23,6 +23,9 @@ extern void darwin_mdns_start(ServerCallback<std::vector<Host>>& callback);
 extern void darwin_mdns_stop();
 #endif
 
+using namespace brls;
+using namespace brls::literals;
+
 namespace {
 std::string strip_ipv4_port(const std::string& address) {
     const auto firstColon = address.find(':');

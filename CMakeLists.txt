@@ -478,6 +478,7 @@ endif ()
 target_include_directories(${PROJECT_NAME} PUBLIC
         app/include
         app/include/gestures
+        app/src
         app/src/crypto
         app/src/gestures
         app/src/keyboards

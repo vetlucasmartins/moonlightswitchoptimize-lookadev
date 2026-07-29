@@ -23,6 +23,8 @@ unsigned int sceLibcHeapSize             = 24 * 1024 * 1024;
 #include <cstdlib>
 
 #include <borealis.hpp>
+
+using namespace brls;
 #include <string>
 
 #include "add_host_tab.hpp"

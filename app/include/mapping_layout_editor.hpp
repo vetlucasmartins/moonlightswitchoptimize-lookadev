@@ -7,25 +7,23 @@
 
 #pragma once
 
-#include <Settings.hpp>
+#include "utils/Settings.hpp"
 #include <borealis.hpp>
 
-using namespace brls;
-
-class MappingLayoutEditor : public Box {
+class MappingLayoutEditor : public brls::Box {
   public:
     std::function<void(void)> dismissCb;
 
     MappingLayoutEditor(int layoutNumber, std::function<void(void)> dismissCb);
     ~MappingLayoutEditor();
 
-    View* getParentNavigationDecision(View* from, View* newFocus,
-                                      FocusDirection direction) override;
+    brls::View* getParentNavigationDecision(brls::View* from, brls::View* newFocus,
+                                           brls::FocusDirection direction) override;
     void dismiss(std::function<void(void)> cb = [] {}) override;
 
   private:
     int layoutNumber;
-    Label* titleLabel;
+    brls::Label* titleLabel;
 
     void renameLayout();
     void removeLayout();

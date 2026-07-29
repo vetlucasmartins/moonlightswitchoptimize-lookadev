@@ -10,17 +10,15 @@
 #include <borealis.hpp>
 #include "GameStreamClient.hpp"
 
-using namespace brls;
-
-class AppCell : public Box {
+class AppCell : public brls::Box {
   public:
     AppCell(const Host& host, const AppInfo& app, int currentApp);
 
-    BRLS_BIND(Image, image, "image");
-    BRLS_BIND(Label, title, "title");
-    BRLS_BIND(Image, currentAppImage, "current_app_image");
-    BRLS_BIND(Image, favoriteAppImage, "favorite_app_image");
-    BRLS_BIND(Rectangle, unactiveLayer, "unactive_layer");
+    BRLS_BIND(brls::Image, image, "image");
+    BRLS_BIND(brls::Label, title, "title");
+    BRLS_BIND(brls::Image, currentAppImage, "current_app_image");
+    BRLS_BIND(brls::Image, favoriteAppImage, "favorite_app_image");
+    BRLS_BIND(brls::Rectangle, unactiveLayer, "unactive_layer");
 
     void setFavorite(bool favorite);
 

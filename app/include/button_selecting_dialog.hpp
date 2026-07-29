@@ -9,33 +9,31 @@
 
 #include <borealis.hpp>
 
-using namespace brls;
-
-class ButtonSelectingDialog : public Dialog {
+class ButtonSelectingDialog : public brls::Dialog {
   public:
     ~ButtonSelectingDialog();
     static ButtonSelectingDialog*
     create(std::string titleText,
-           std::function<void(std::vector<ControllerButton>)> callback,
+           std::function<void(std::vector<brls::ControllerButton>)> callback,
            bool oneKey = false);
     void open() override;
 
   private:
-    Animatable timer;
-    std::function<void(std::vector<ControllerButton>)> callback;
+    brls::Animatable timer;
+    std::function<void(std::vector<brls::ControllerButton>)> callback;
     std::string titleText;
-    std::vector<ControllerButton> buttons;
-    ControllerState oldState;
-    Label* label;
+    std::vector<brls::ControllerButton> buttons;
+    brls::ControllerState oldState;
+    brls::Label* label;
     bool oneKey;
 
     ButtonSelectingDialog(
-        Box* box, std::function<void(std::vector<ControllerButton>)> callback,
+        brls::Box* box, std::function<void(std::vector<brls::ControllerButton>)> callback,
         bool oneKey);
 
     void reloadLabel();
     std::string buttonsText();
 
     void draw(NVGcontext* vg, float x, float y, float width, float height,
-              Style style, FrameContext* ctx) override;
+              brls::Style style, brls::FrameContext* ctx) override;
 };

@@ -96,7 +96,7 @@ void MoonlightSession::connection_started() {
     appletSetMediaPlaybackState(true);
     if (appletGetOperationMode() == AppletOperationMode_Handheld) {
         // Prevent high CPU boost thermal throttling in Handheld mode during streaming
-        appletSetCpuBoostMode(AppletCpuBoostMode_Disabled);
+        appletSetCpuBoostMode(ApmCpuBoostMode_Normal);
     }
 #endif
 }
@@ -107,7 +107,7 @@ void MoonlightSession::connection_terminated(int error_code) {
 #ifdef __SWITCH__
     // Re-enable screen sleep state and reset CPU boost mode on session termination
     appletSetMediaPlaybackState(false);
-    appletSetCpuBoostMode(AppletCpuBoostMode_Disabled);
+    appletSetCpuBoostMode(ApmCpuBoostMode_Normal);
 #endif
 
     if (!m_active_session)

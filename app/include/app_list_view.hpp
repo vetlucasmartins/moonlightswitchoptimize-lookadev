@@ -10,15 +10,13 @@
 #include "app_cell.hpp"
 #include "grid_view.hpp"
 #include "loading_overlay.hpp"
-#include <Settings.hpp>
+#include "utils/Settings.hpp"
 #include <borealis.hpp>
 #include "GameStreamClient.hpp"
 
 #include <optional>
 
-using namespace brls;
-
-class AppListView : public Box {
+class AppListView : public brls::Box {
   public:
     AppListView(const Host& host);
 
@@ -27,7 +25,7 @@ class AppListView : public Box {
 
   private:
     Host host;
-    View* hintView = nullptr;
+    brls::View* hintView = nullptr;
     std::optional<AppInfo> currentApp;
     bool loading = false;
     bool inputBlocked = false;
@@ -35,7 +33,7 @@ class AppListView : public Box {
     void blockInput(bool block);
 
     GridView* gridView;
-    BRLS_BIND(Box, container, "container");
+    BRLS_BIND(brls::Box, container, "container");
 
     void setCurrentApp(const AppInfo& app);
     void terninateApp();

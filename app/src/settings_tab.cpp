@@ -18,6 +18,9 @@
 #include "button_selecting_dialog.hpp"
 #include "mapping_layout_editor.hpp"
 #include "UpscalingSupport.hpp"
+
+using namespace brls;
+using namespace brls::literals;
 #include <cmath>
 #include <iomanip>
 #include <sstream>

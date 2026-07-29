@@ -6,6 +6,7 @@
 //
 
 #include "DiscoverManager.hpp"
+#include "libgamestream/errors.h"
 #include "GameStreamClient.hpp"
 #include <algorithm>
 

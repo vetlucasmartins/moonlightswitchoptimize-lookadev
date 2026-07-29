@@ -11,6 +11,7 @@
 #include "helper.hpp"
 #include "main_tabs_view.hpp"
 
+using namespace brls;
 using namespace brls::literals;
 
 namespace {

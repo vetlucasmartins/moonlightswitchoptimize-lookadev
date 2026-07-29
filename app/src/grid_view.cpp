@@ -7,6 +7,8 @@
 
 #include "grid_view.hpp"
 
+using namespace brls;
+
 GridView::GridView() : Box(Axis::COLUMN), columls(7) {}
 
 GridView::GridView(int columns) : Box(Axis::COLUMN), columls(columns) {}

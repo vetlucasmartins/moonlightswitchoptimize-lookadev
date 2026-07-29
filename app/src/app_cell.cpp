@@ -10,6 +10,8 @@
 #include "Settings.hpp"
 #include "streaming_view.hpp"
 
+using namespace brls;
+
 AppCell::AppCell(const Host& host, const AppInfo& app, int currentApp) {
     this->inflateFromXMLRes("xml/cells/app_cell.xml");
     this->setFavorite(false);

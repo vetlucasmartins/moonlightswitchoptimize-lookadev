@@ -8,16 +8,14 @@
 #pragma once
 
 #include "favorite_tab.hpp"
-#include <Singleton.hpp>
+#include "utils/Singleton.hpp"
 #include <borealis.hpp>
-
-using namespace brls;
 
 class MainTabs : public brls::TabFrame {
   public:
     MainTabs();
     void refillTabs(bool keepFocus = true);
-    static View* create();
+    static brls::View* create();
 
     void willAppear(bool resetState) override;
     FavoriteTab* getFavoriteTab() { return favoriteTab; }

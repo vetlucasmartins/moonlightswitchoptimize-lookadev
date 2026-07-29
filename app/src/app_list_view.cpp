@@ -9,6 +9,8 @@
 #include "helper.hpp"
 #include "main_tabs_view.hpp"
 
+using namespace brls;
+
 AppListView::AppListView(const Host& host) : host(host) {
     this->inflateFromXMLRes("xml/views/app_list_view.xml");
 

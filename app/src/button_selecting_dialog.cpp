@@ -7,6 +7,8 @@
 
 #include "button_selecting_dialog.hpp"
 
+using namespace brls;
+
 ButtonSelectingDialog::ButtonSelectingDialog(
     Box* box, std::function<void(std::vector<ControllerButton>)> callback,
     bool oneKey)

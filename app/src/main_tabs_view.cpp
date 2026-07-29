@@ -12,6 +12,9 @@
 #include "host_tab.hpp"
 #include "settings_tab.hpp"
 
+using namespace brls;
+using namespace brls::literals;
+
 MainTabs::MainTabs() {
     favoriteTab = new FavoriteTab();
     favoriteTab->ptrLock();
