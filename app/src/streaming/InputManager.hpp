@@ -65,14 +65,7 @@ class MoonlightInputManager : public Singleton<MoonlightInputManager> {
     static void leftMouseClick();
     static void rightMouseClick();
 
-    void startInputThread();
-    void stopInputThread();
-
   private:
-    std::thread inputThread;
-    std::atomic<bool> inputThreadRunning{false};
-    std::mutex inputMutex;
-
     enum class DesktopScrollAxis {
         None,
         Horizontal,
